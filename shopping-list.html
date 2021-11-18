@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping list</title>
+    <script>
+        let categoryInput = null;
+        let categorySubmit = null;
+        let articleInput = null;
+        let articleSubmit = null;
+        let categories = [];
+        let selectedCategory = null;
+
+        function storeData() {
+            localStorage.setItem('shopping-list', JSON.stringify(categories));
+        }
+
+        function fetchData() {
+            const data = localStorage.getItem('shopping-list')
+            categories = JSON.parse(data) || [];
+        }
+
+        function onAddCategory(evt) {
+            let data = {
+                id: categories.length,
+                name: categoryInput.value,
+                articles: []
+            }
+            categories.push(data)
+            categoryInput.value = "";
+            storeData();
+            renderCategories()
+        }
+        function onAddArticle(evt) {
+            if(!selectedCategory) {
+                return;
+            }
+            selectedCategory.articles.push({
+                id: selectedCategory.articles.length,
+                name: articleInput.value
+            })
+            articleInput.value = "";
+            storeData();
+            renderArticles(null, selectedCategory)
+        }
+
+        function renderArticles(evt, category) {
+            if(evt) {
+                if(selectedCategory) {
+                    document.querySelector('.wrapper.group #categories-container p.active').classList.remove('active')
+                }
+                evt.target.classList.add('active')
+            }
+
+            selectedCategory = category;
+            articlesContainer = document.getElementById('articles-container');
+            let list = [];
+            category.articles.forEach(article => {
+                let p = document.createElement('p')
+                p.innerHTML = article.name;
+                list.push(p)
+            });
+            articlesContainer.replaceChildren(...list)
+        }
+
+        function renderCategories() {
+            categoriesContainer = document.getElementById('categories-container');
+            let list = [];
+            categories.forEach(category => {
+                let p = document.createElement('p')
+                p.addEventListener('click', (evt) => renderArticles(evt, category))
+                p.innerHTML = category.name;
+                list.push(p)
+            });
+            categoriesContainer.replaceChildren(...list)
+        }
+
+        function onPageLoad() {
+            categoryInput = document.getElementById('input-category');
+            categorySubmit = document.getElementById('button-category')
+            articleInput = document.getElementById('input-article');
+            articleSubmit = document.getElementById('button-article')
+            categorySubmit.addEventListener('click', onAddCategory)
+            articleSubmit.addEventListener('click', onAddArticle)
+
+            fetchData();
+            renderCategories();
+        }
+        
+    </script>
+
+    <style>
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+
+        }
+
+        .wrapper.group {
+            display: flex;
+            flex-grow: 1;
+            flex-direction: column;
+            padding: 0 1em 0 1em;
+        }
+
+        .wrapper.group #categories-container p.active {
+            background-color: #ff0000 !important
+        }
+
+        .wrapper.group #categories-container p:nth-child(even) {
+            background-color: #eee
+        }
+
+        .wrapper.group #articles-container p:nth-child(even) {
+            background-color: #eee
+        }
+    </style>
+</head>
+<body onload="onPageLoad()">
+    <div class="input-group">
+        <label for="input-category">Kategori</label>
+        <input type="text" name="category" id="input-category">
+    </div>
+    <button id="button-category">Lägg till kategori</button>
+    
+    <div class="input-group">
+        <label for="input-aricle">Artikel</label>
+        <input type="text" name="category" id="input-article">
+    </div>
+    <button id="button-article">Lägg till kategori</button>
+
+    <div class="wrapper">
+        <div class="wrapper group">
+            <h2 id="categories">Kategorier</h2>
+            <div id="categories-container"></div>
+        </div>
+        <div class="wrapper group">
+            <h2 id="articles">Artiklar</h2>
+            <div id="articles-container"></div>
+        </div>
+    </div>
+</html>
